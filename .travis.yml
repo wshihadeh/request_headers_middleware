@@ -3,3 +3,15 @@ sudo: false
 rvm:
   - 2.2
   - 2.3.1
+
+before_install: gem install bundler -v 1.14.6
+
+script: bin/travis
+
+matrix:
+  fast_finish: true
+
+env:
+  matrix:
+    - BUILD_TYPE=rspec
+    - BUILD_TYPE=rubocop
