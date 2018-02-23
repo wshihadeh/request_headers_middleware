@@ -25,12 +25,13 @@ class DelayedRequestHeadersPlugin < Delayed::Plugin
     end
 
     lifecycle.before(:perform) do |worker, job|
-      store = job.payload_object.instance_variable_get(:@store)
-      RequestHeadersMiddleware.load_store store, RequestHeadersMiddleware.delayed_logger
+      RequestHeadersMiddleware.store = job.payload_object.instance_variable_get(:@store)
+      RequestHeadersMiddleware.tag_logger RequestHeadersMiddleware.delayed_logger
     end
 
     lifecycle.after(:perform) do |worker, job|
-      RequestHeadersMiddleware.unload_store RequestHeadersMiddleware.delayed_logger
+      RequestHeadersMiddleware.untag_logger RequestHeadersMiddleware.delayed_logger
+      RequestHeadersMiddleware.store = {}
     end
   end
 end

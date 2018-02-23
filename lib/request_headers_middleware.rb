@@ -25,19 +25,20 @@ module RequestHeadersMiddleware # :nodoc:
     RequestStore[:headers] ||= {}
   end
 
-  def load_store(store, logger)
+  def store=(store)
     RequestStore[:headers] = store
+  end
 
+  def tag_logger(logger)
     store.each do |key, value|
       logger&.push_tags(value) unless value.nil?
     end
   end
 
-  def unload_store(logger)
+  def untag_logger(logger)
     store.each do |key, value|
       logger&.pop_tags unless value.nil?
     end
-    RequestStore[:headers] = {}
   end
 
   def setup(config)

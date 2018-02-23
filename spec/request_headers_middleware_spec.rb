@@ -21,7 +21,8 @@ describe RequestHeadersMiddleware::Middleware do
 
     it 'assign a value for store and tag logger' do
       store = { 'X-Request-Id': 'ef382618-e46d-42f5-aca6-ae9e1db8fee0' }
-      RequestHeadersMiddleware.load_store store, logger
+      RequestHeadersMiddleware.store = store
+      RequestHeadersMiddleware.tag_logger logger
       expect(RequestHeadersMiddleware.store[:'X-Request-Id']).to eq(store[:'X-Request-Id'])
       tags = logger.pop_tags(store.size)
       expect(tags.count).to eq(1)
@@ -30,11 +31,10 @@ describe RequestHeadersMiddleware::Middleware do
 
     it 'reset the store and clear the tag from logger' do
       store = { 'X-Request-Id': 'ef382618-e46d-42f5-aca6-ae9e1db8fee0' }
-      RequestHeadersMiddleware.load_store store, logger
+      RequestHeadersMiddleware.store = store
+      RequestHeadersMiddleware.tag_logger logger
       expect(RequestHeadersMiddleware.store[:'X-Request-Id']).to eq(store[:'X-Request-Id'])
-      RequestHeadersMiddleware.unload_store logger
-
-      expect(RequestHeadersMiddleware.store).to eq({})
+      RequestHeadersMiddleware.untag_logger logger
 
       tags = logger.pop_tags(store.size)
       expect(tags.count).to eq(0)
