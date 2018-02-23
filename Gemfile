@@ -5,5 +5,7 @@ source 'https://rubygems.org'
 gemspec
 
 group :test, :development do
+  gem 'activesupport'
   gem 'byebug'
+  gem 'delayed_job'
 end

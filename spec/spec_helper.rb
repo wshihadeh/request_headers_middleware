@@ -28,7 +28,7 @@ require 'bundler/setup'
 # have to require some gems if they are part of bigger gem like ActiveRecord
 # which is part of Rails. You can say :require => false in gemfile to always
 # use explicit requiring
-Bundler.require(:default, :test)
+Bundler.require(:test)
 
 Dir[File.join('./spec/support/**/*.rb')].each { |f| require f }
 

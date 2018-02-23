@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 require 'spec_helper'
+require 'active_support'
 
 describe RequestHeadersMiddleware::Middleware do
   let(:app) { MockRackApp.new }
+  let(:logger) { ActiveSupport::TaggedLogging.new(Logger.new(STDOUT)) }
   subject { described_class.new(app) }
 
   context 'when MockRackApp called with a request' do
@@ -15,6 +17,28 @@ describe RequestHeadersMiddleware::Middleware do
 
     it 'returns an empty Hash by default' do
       expect(RequestHeadersMiddleware.store).to eq({})
+    end
+
+    it 'assign a value for store and tag logger' do
+      store = { 'X-Request-Id': 'ef382618-e46d-42f5-aca6-ae9e1db8fee0' }
+      RequestHeadersMiddleware.load_store store, logger
+      expect(RequestHeadersMiddleware.store[:'X-Request-Id']).to eq(store[:'X-Request-Id'])
+      tags = logger.pop_tags(store.size)
+      expect(tags.count).to eq(1)
+      expect(tags.first).to eq(store[:'X-Request-Id'])
+    end
+
+    it 'reset the store and clear the tag from logger' do
+      store = { 'X-Request-Id': 'ef382618-e46d-42f5-aca6-ae9e1db8fee0' }
+      RequestHeadersMiddleware.load_store store, logger
+      expect(RequestHeadersMiddleware.store[:'X-Request-Id']).to eq(store[:'X-Request-Id'])
+      RequestHeadersMiddleware.unload_store logger
+
+      expect(RequestHeadersMiddleware.store).to eq({})
+
+      tags = logger.pop_tags(store.size)
+      expect(tags.count).to eq(0)
+      expect(tags).to eq([])
     end
 
     it 'only saves the X-Request-Id in RequestHeadersMiddleware.store' do
