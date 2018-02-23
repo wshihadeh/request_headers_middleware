@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 require 'request_headers_middleware/railtie' if defined?(Rails)
+require 'request_headers_middleware/delayed_job' if defined?(Delayed)
+require 'request_headers_middleware/configuration'
 require 'request_headers_middleware/middleware'
 
 module RequestHeadersMiddleware # :nodoc:
@@ -9,9 +11,33 @@ module RequestHeadersMiddleware # :nodoc:
   @whitelist = ['x-request-id'.to_sym]
   @blacklist = []
   @callbacks = []
+  @configuration = Configuration.new
+
+  def self.configure
+    yield @configuration
+  end
+
+  def self.delayed_logger
+    @configuration.delayed_logger
+  end
 
   def store
     RequestStore[:headers] ||= {}
+  end
+
+  def load_store(store, logger)
+    RequestStore[:headers] = store
+
+    store.each do |key, value|
+      logger&.push_tags(value) unless value.nil?
+    end
+  end
+
+  def unload_store(logger)
+    store.each do |key, value|
+      logger&.pop_tags unless value.nil?
+    end
+    RequestStore[:headers] = {}
   end
 
   def setup(config)
