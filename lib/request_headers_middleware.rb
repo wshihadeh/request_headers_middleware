@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'request_headers_middleware/railtie' if defined?(Rails)
 require 'request_headers_middleware/delayed_job' if defined?(Delayed)
+require 'request_headers_middleware/message_queue' if defined?(MessageQueue)
 require 'request_headers_middleware/configuration'
 require 'request_headers_middleware/middleware'
 
@@ -31,13 +32,13 @@ module RequestHeadersMiddleware # :nodoc:
 
   def tag_logger(logger)
     store.each do |key, value|
-      logger&.push_tags(value) unless value.nil?
+      logger&.push_tags(value) unless value.nil? || !logger.respond_to?(:push_tags)
     end
   end
 
   def untag_logger(logger)
     store.each do |key, value|
-      logger&.pop_tags unless value.nil?
+      logger&.pop_tags unless value.nil? || !logger.respond_to?(:pop_tags)
     end
   end
 
